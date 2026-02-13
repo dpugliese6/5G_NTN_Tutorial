@@ -1,0 +1,14 @@
+{
+  "att_tx": 0,
+  "att_rx": 25,
+  "max_rxgain": 114,
+  "sdr_addrs": "serial = 31C5255",
+  "cellSpecificKoffset_r17": 240,
+  "ta-Common-r17": 0,
+  "positionX-r17": 0,
+  "positionY-r17": 0,
+  "positionZ-r17": 32433846,
+  "velocityVX-r17": 0,
+  "velocityVY-r17": 0,
+  "velocityVZ-r17": 0
+}

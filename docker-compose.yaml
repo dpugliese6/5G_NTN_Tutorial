@@ -1,0 +1,60 @@
+services:
+  oai-gnb:
+        image: ${REGISTRY-oaisoftwarealliance/}${GNB_IMG:-oai-gnb}:${TAG:-2025.w52}
+        container_name: oai-gnb
+        cap_add:
+            - SYS_NICE
+            - IPC_LOCK
+        cap_drop:
+            - ALL
+        privileged: true
+        environment:
+            #USE_ADDITIONAL_OPTIONS: #--telnetsrv --telnetsrv.shrmod ci
+            UHD_IMAGES_DIR : "/usr/share/uhd/images"
+            ASAN_OPTIONS: detect_leaks=0
+        network_mode: host
+        volumes:
+            - ./Configuration_file/template.conf/:/opt/oai-gnb/etc/gnb.conf
+            - /dev/bus/usb/:/dev/bus/usb/
+            - /usr/local/share/uhd/images:/usr/share/uhd/images
+        healthcheck:
+            test: /bin/bash -c "pgrep nr-softmodem"
+            start_period: 10s
+            start_interval: 500ms
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            
+  oai-nr-ue:
+        image: ${REGISTRY-oaisoftwarealliance/}${NRUE_IMG:-oai-nr-ue}:${TAG:-2025.w52}
+        container_name: oai-nr-ue
+        cap_drop:
+            - ALL
+        cap_add:
+            - NET_ADMIN  # for interface bringup
+            - NET_RAW    # for ping
+            - SYS_NICE
+        privileged: true
+        environment:
+            UHD_IMAGES_DIR : "/usr/share/uhd/images"
+            #USE_ADDITIONAL_OPTIONS: -r 106 --numerology 1 --band 78 -C 3619200000 --rfsimulator.serveraddr server  
+            USE_ADDITIONAL_OPTIONS: ${USE_ADDITIONAL_OPTIONS}
+        network_mode: host
+        devices:
+             - /dev/net/tun:/dev/net/tun
+        volumes:
+            - ./Configuration_file/nrue.conf:/opt/oai-nr-ue/etc/nr-ue.conf
+            - /dev/bus/usb/:/dev/bus/usb/
+            - /usr/local/share/uhd/images:/usr/share/uhd/images
+        healthcheck:
+            test: /bin/bash -c "pgrep nr-uesoftmodem"
+            start_period: 10s
+            start_interval: 500ms
+            interval: 10s
+            timeout: 5s
+            retries: 5        
+
+networks:
+  default:
+    external: true
+    name: docker_open5gs_default
