@@ -1,0 +1,19 @@
+//This file configure the HARQ and SIB19 section of the OAI gNB conf file for a LEO-sat gNB travelling from 
+// an elevation angle of 45° to 135° at long = 0°, with respect to lat = 0°. UE (or ground cell) placed at long = 1.8° (offset 200km) 
+{
+  "harq": {
+    "disable_harq": 0
+  },
+  "sib19": {
+    "ntn-UlSyncValidityDuration-r17": 0, // Check if this value is supported
+    "cellSpecificKoffset_r17": 5, // Check if this value is enough due to increased slant range
+    "ta-Common-r17": 0,
+    "ta-CommonDrift-r17": 0,
+    "positionX-r17": 5344201,
+    "positionY-r17": 0,
+    "positionZ-r17": 440293,
+    "velocityVX-r17": 10341,
+    "velocityVY-r17": 0,
+    "velocityVZ-r17": -125611
+  }
+}

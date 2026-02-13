@@ -1,0 +1,19 @@
+//This file configure the HARQ and SIB19 section of the OAI gNB conf file for a GEO-sat gNB placed at long = 0°
+// and a UE (or ground cell) placed at long = 0° and lat = 30°
+{
+  "harq": {
+    "disable_harq": 1
+  },
+  "sib19": {
+    "ntn-UlSyncValidityDuration-r17": 0, // Check if this value is supported
+    "cellSpecificKoffset_r17": 240, // Check if this value is enough due to increased slant range
+    "ta-Common-r17": 0,
+    "ta-CommonDrift-r17": 0,
+    "positionX-r17": 0,
+    "positionY-r17": 0,
+    "positionZ-r17": 32433846,
+    "velocityVX-r17": 0,
+    "velocityVY-r17": 0,
+    "velocityVZ-r17": 0
+  }
+}
