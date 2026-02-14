@@ -1,0 +1,7 @@
+//This file configure the GNSS position of the OAI UE conf file for a LEO-sat gNB travelling from 
+// an elevation angle of 45° to 135° at long = 0°, with respect to lat = 0°. UE (or ground cell) placed at long = 0° 
+{
+    "x": 6371000.0,
+    "y": 0.0,
+    "z": 0.0  
+}

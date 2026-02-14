@@ -1,0 +1,13 @@
+{
+  "band": 255,
+  "C": 1549000000,
+  "CO": -101500000,
+  "r": 106,
+  "numerology": 0,
+  "ssb": 226,
+  "usrp-args": "serial=34AF4F6",
+  "clock-source": 1,
+  "time-source": 1,
+  "ue-rxgain" : 131,
+  "E": 1
+}

@@ -9,9 +9,11 @@
     "cellSpecificKoffset_r17": 240,
     "ta-Common-r17": 0,
     "ta-CommonDrift-r17": 0,
-    "positionX-r17": 0,
+    //resolution of 1.3 km
+    "positionX-r17": 32433951, // 42164137 km
     "positionY-r17": 0,
-    "positionZ-r17": 32433846,
+    "positionZ-r17": 0,
+    //resolution of 0.06 m/s
     "velocityVX-r17": 0,
     "velocityVY-r17": 0,
     "velocityVZ-r17": 0

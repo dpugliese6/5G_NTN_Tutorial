@@ -1,0 +1,7 @@
+//This file configure the GNSS position of the OAI UE conf file for a GEO-sat gNB placed at long = 0°
+// and a UE (or ground cell) placed at long = 0° and lat = 45°
+{
+    "x": 4517590.9,
+    "y": 0.0,
+    "z": 4487348.4
+}
