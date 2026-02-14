@@ -1,0 +1,8 @@
+{
+ "band": 255,
+ "rf_freq": 1549000000,
+ "rf_offset": -101500000,
+ "numerology": 0,
+ "N_RB_DL": 106,
+ "ssb_start": 226
+}

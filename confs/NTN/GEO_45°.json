@@ -1,21 +1,20 @@
 //This file configure the HARQ and SIB19 section of the OAI gNB conf file for a GEO-sat gNB placed at long = 0°
 // and a UE (or ground cell) placed at long = 0° and lat = 45°
 {
-  "harq": {
-    "disable_harq": 1
-  },
-  "sib19": {
-    "ntn-UlSyncValidityDuration-r17": 0, // Check if this value is supported
-    "cellSpecificKoffset_r17": 240, // Check if this value is enough due to increased slant range
-    "ta-Common-r17": 0,
-    "ta-CommonDrift-r17": 0,
-    //resolution of 1.3 km
-    "positionX-r17": 32433951, // 42164137 km
-    "positionY-r17": 0,
-    "positionZ-r17": 0,
-    //resolution of 0.06 m/s
-    "velocityVX-r17": 0,
-    "velocityVY-r17": 0,
-    "velocityVZ-r17": 0
-  }
+  //harq
+  "disable_harq": 1,
+  //sib19
+  "ntn-UlSyncValidityDuration-r17": 0, // Check if this value is supported
+  "cellSpecificKoffset_r17": 240, // Check if this value is enough due to increased slant range
+  "ta-Common-r17": 0,
+  "ta-CommonDrift-r17": 0,
+  "positionX-r17": 32433951, // 42164137 km //
+  "positionY-r17": 0,                       //resolution of 1.3 km
+  "positionZ-r17": 0,                       //
+  "velocityVX-r17": 0,                      //
+  "velocityVY-r17": 0,                      //resolution of 0.06 m/s
+  "velocityVZ-r17": 0,                      //
+  //mac
+  "dl_max_mcs": 28, //TODO: align to SNR computed on MATLAB
+  "ul_max_mcs": 28
 }
