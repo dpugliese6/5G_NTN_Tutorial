@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# Script to configure gnb_template.conf with values from JSON files
-# Dynamic version with last configuration memory and detailed debug
-
-# set -e  # Disabled for better error visibility
+# Script to configure ue_template.conf with values from JSON files
+# Version for nested structures (one level deep)
 
 # Colors for output
 RED='\033[0;31m'
@@ -14,7 +12,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # File to store last configuration
-LAST_CONFIG_FILE=".gnb_last_config"
+LAST_CONFIG_FILE=".ue_last_config"
 
 # Check if jq is installed
 if ! command -v jq &> /dev/null; then
@@ -28,7 +26,7 @@ fi
 display_header() {
     clear
     echo -e "${CYAN}================================================${NC}"
-    echo -e "${CYAN}    gNB Configuration Tool - Dynamic Mode${NC}"
+    echo -e "${CYAN}    UE Configuration Tool - Dynamic Mode${NC}"
     echo -e "${CYAN}================================================${NC}"
     echo ""
 }
@@ -148,21 +146,23 @@ confirm_selection() {
     fi
 }
 
-# Function to replace a value in the config file
-# Function to replace a value in the config file
-# Function to replace a value in the config file
-replace_value() {
+# Function to replace a value in nested structure
+replace_value_nested() {
     local pattern="$1"
     local new_value="$2"
     
-    # Check if pattern exists in the file (handle both spaces and tabs)
-    if grep -E "^[[:space:]]*${pattern}[[:space:]]*=" "$OUTPUT_FILE" >/dev/null 2>&1; then
-        sed -i.bak "s|^\([[:space:]]*${pattern}[[:space:]]*=[[:space:]]*\).*|\1${new_value};|" "$OUTPUT_FILE"
+    # Use word boundaries to match exact parameter names only
+    # This prevents "x" from matching "att_tx", "nb_rx", etc.
+    if grep -E "[[:space:]]${pattern}[[:space:]]*=" "$OUTPUT_FILE" >/dev/null 2>&1; then
+        # Replace the value, preserving indentation
+        # Use word boundary in sed as well
+        sed -i.bak "s|\([[:space:]]${pattern}[[:space:]]*=[[:space:]]*\).*|\1${new_value};|" "$OUTPUT_FILE"
         return 0
     else
         return 1
     fi
 }
+
 # Function to read JSON with comment support
 read_json_clean() {
     local file="$1"
@@ -175,10 +175,10 @@ extract_json_params() {
     local file="$1"
     local category="$2"
     
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}?????????????????????????????????????????????${NC}"
     echo -e "${CYAN}Reading all parameters from $category...${NC}"
     echo -e "${CYAN}File: $(basename "$file")${NC}"
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}?????????????????????????????????????????????${NC}"
     
     # Check if file exists
     if [ ! -f "$file" ]; then
@@ -238,7 +238,7 @@ extract_json_params() {
         # Handle string values (need quotes in config)
         if echo "$clean_json" | jq -e ".[\"$key\"] | type == \"string\"" >/dev/null 2>&1; then
             # Add quotes for string values
-            if replace_value "$key" "\"$value\""; then
+            if replace_value_nested "$key" "\"$value\""; then
                 applied=$((applied + 1))
                 applied_params+=("$key")
                 applied_values+=("\"$value\"")
@@ -248,7 +248,7 @@ extract_json_params() {
             fi
         else
             # Numeric or boolean values
-            if replace_value "$key" "$value"; then
+            if replace_value_nested "$key" "$value"; then
                 applied=$((applied + 1))
                 applied_params+=("$key")
                 applied_values+=("$value")
@@ -262,30 +262,30 @@ extract_json_params() {
     
     # Print summary - ALL parameters read from JSON
     echo ""
-    echo -e "${CYAN}📋 ALL PARAMETERS READ FROM JSON ($count total):${NC}"
+    echo -e "${CYAN}?? ALL PARAMETERS READ FROM JSON ($count total):${NC}"
     echo ""
     
     # Show applied parameters in green
     if [ ${#applied_params[@]} -gt 0 ]; then
-        echo -e "${GREEN}✓ APPLIED (found in template - $applied parameters):${NC}"
+        echo -e "${GREEN}? APPLIED (found in template - $applied parameters):${NC}"
         for i in "${!applied_params[@]}"; do
-            printf "  ${GREEN}✓ %-38s${NC} = ${CYAN}%s${NC}\n" "${applied_params[$i]}" "${applied_values[$i]}"
+            printf "  ${GREEN}? %-38s${NC} = ${CYAN}%s${NC}\n" "${applied_params[$i]}" "${applied_values[$i]}"
         done
         echo ""
     fi
     
     # Show skipped parameters in yellow
     if [ ${#skipped_params[@]} -gt 0 ]; then
-        echo -e "${YELLOW}⚠ NOT APPLIED (not found in template - ${#skipped_params[@]} parameters):${NC}"
+        echo -e "${YELLOW}? NOT APPLIED (not found in template - ${#skipped_params[@]} parameters):${NC}"
         for i in "${!skipped_params[@]}"; do
-            printf "  ${YELLOW}⚠ %-38s${NC} = ${CYAN}%s${NC}\n" "${skipped_params[$i]}" "${skipped_values[$i]}"
+            printf "  ${YELLOW}? %-38s${NC} = ${CYAN}%s${NC}\n" "${skipped_params[$i]}" "${skipped_values[$i]}"
         done
         echo ""
     fi
     
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${BLUE}?????????????????????????????????????????????${NC}"
     echo -e "${BLUE}Summary for $category: Applied ${GREEN}$applied${BLUE}/${count} parameters${NC}"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${BLUE}?????????????????????????????????????????????${NC}"
     echo ""
     
     return 0
@@ -318,7 +318,7 @@ find_confs_dir() {
 
 # Function to find template file
 find_template() {
-    local template="gnb_template.conf"
+    local template="ue_template.conf"
     
     # Try current directory
     if [ -f "./$template" ]; then
@@ -358,7 +358,7 @@ echo ""
 # Find template file
 TEMPLATE_FILE=$(find_template)
 if [ $? -ne 0 ]; then
-    echo -e "${RED}Error: Template file 'gnb_template.conf' not found.${NC}"
+    echo -e "${RED}Error: Template file 'ue_template.conf' not found.${NC}"
     echo "Searched in: current directory, confs directory, and parent directory"
     exit 1
 fi
@@ -379,18 +379,18 @@ if [ "$USE_LAST_CONFIG" = false ]; then
     echo -e "${GREEN}Step 1: Select configuration files${NC}"
     echo ""
 
-    # Select RU file
+    # Select RU file (shared with gNB)
     RU_FILE=$(select_file "${CONF_DIR}/RUs" "RU configuration")
     if [ $? -ne 0 ]; then exit 1; fi
     echo ""
 
-    # Select NTN file
-    NTN_FILE=$(select_file "${CONF_DIR}/NTN" "NTN configuration")
+    # Select NTN file (UE specific)
+    NTN_FILE=$(select_file "${CONF_DIR}/UE/NTN" "NTN configuration")
     if [ $? -ne 0 ]; then exit 1; fi
     echo ""
 
-    # Select Cells file
-    CELLS_FILE=$(select_file "${CONF_DIR}/Cells" "Cells configuration")
+    # Select Cells file (UE specific)
+    CELLS_FILE=$(select_file "${CONF_DIR}/UE/Cells" "Cells configuration")
     if [ $? -ne 0 ]; then exit 1; fi
 
     # Confirm selection
@@ -419,8 +419,8 @@ if [ "$output_option" == "2" ]; then
     echo -e "${GREEN}Created backup:${NC} $BACKUP_FILE"
     OUTPUT_FILE="$TEMPLATE_FILE"
 else
-    read -p "Enter output filename [gnb_configured.conf]: " OUTPUT_FILE
-    OUTPUT_FILE="${OUTPUT_FILE:-gnb_configured.conf}"
+    read -p "Enter output filename [ue_configured.conf]: " OUTPUT_FILE
+    OUTPUT_FILE="${OUTPUT_FILE:-ue_configured.conf}"
 fi
 
 echo ""
@@ -445,7 +445,7 @@ rm -f "${OUTPUT_FILE}.bak"
 
 echo ""
 echo -e "${GREEN}================================================${NC}"
-echo -e "${GREEN}✓ Configuration complete!${NC}"
+echo -e "${GREEN}? Configuration complete!${NC}"
 echo -e "${GREEN}================================================${NC}"
 echo ""
 echo -e "${CYAN}Output file:${NC} $OUTPUT_FILE"

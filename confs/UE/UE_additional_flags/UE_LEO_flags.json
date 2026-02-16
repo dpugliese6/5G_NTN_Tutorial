@@ -1,0 +1,9 @@
+{
+ "--ntn-initial-time-drift" : -16,
+ "--ue-fo-compensation" : true,
+ "--initial-fo" : 25250, 
+ "--cont-fo-comp" : 2,
+ "--num-ul-actors" : 1, 
+ "--time-sync-I" : 0.1, 
+ "--autonomous-ta" : true
+}

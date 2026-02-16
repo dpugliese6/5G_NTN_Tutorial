@@ -1,0 +1,8 @@
+{
+ "att_tx"    : 0,
+ "att_rx"    : 0,
+ "max_rxgain": 60,
+ "sdr_addrs" : "addr = 192.168.30.2",
+ "tx_subdev" : "A:0",
+ "rx_subdev" : "A:0"
+}

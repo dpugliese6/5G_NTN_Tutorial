@@ -1,4 +1,5 @@
 *.log
-backups
 *.grc
 *.py
+*.backup.*
+*_last_config

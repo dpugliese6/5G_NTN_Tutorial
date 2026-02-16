@@ -5,7 +5,7 @@
   "disable_harq": 1,
   //sib19
   "ntn-UlSyncValidityDuration-r17": 0, // Check if this value is supported
-  "cellSpecificKoffset_r17": 240, // Check if this value is enough due to increased slant range
+  "cellSpecificKoffset_r17": 263, // Check if this value is enough due to increased slant range
   "ta-Common-r17": 0,
   "ta-CommonDrift-r17": 0,
   "positionX-r17": 32433951, // 42164137 km //

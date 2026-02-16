@@ -2,7 +2,7 @@
  "absoluteFrequencySSB": 497790,
  "dl_absoluteFrequencyPointA": 496764,
  "dl_frequencyBand": 254,
- "dl_subcarrierSpacin": 0,
+ "dl_subcarrierSpacing": 0,
  "dl_carrierBandwidth": 52,
  "initialDLBWPlocationAndBandwidth": 14025,
  "ul_frequencyBand": 254, 

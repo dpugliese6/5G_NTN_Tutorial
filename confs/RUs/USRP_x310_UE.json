@@ -1,0 +1,10 @@
+{
+ "att_tx"    : 0,
+ "att_rx"    : 0,
+ "max_rxgain": 119,
+ "sdr_addrs" : "addr =  192.168.41.2",
+ "time_src"  : "external",
+ "clock_src" : "external",
+ "tx_subdev" : "A:0",
+ "rx_subdev" : "A:0"
+}

@@ -1,7 +1,0 @@
-{
- "att_tx"    : 0,
- "att_rx"    : 0,
- "max_rxgain": 131,
- "sdr_addrs" : "serial = 31C5255"
-}
-
