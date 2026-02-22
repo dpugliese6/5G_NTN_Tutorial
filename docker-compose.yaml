@@ -8,11 +8,13 @@ services:
         cap_drop:
             - ALL
         privileged: true
+        env_file:
+            - .env.gnb #Configure here flags for delays
         environment:
             USE_ADDITIONAL_OPTIONS: #Put here additional parameters for nr-softmodem executable
             UHD_IMAGES_DIR : "/usr/share/uhd/images"
             ASAN_OPTIONS: detect_leaks=0
-            DELAY_GNB_CN: 0ms
+            # DELAY_GNB_CN is read from .env.gnb
         networks:
          default:
            ipv4_address: 172.22.0.25

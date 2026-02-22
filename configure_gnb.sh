@@ -38,11 +38,13 @@ save_last_config() {
     local ru_file="$1"
     local ntn_file="$2"
     local cells_file="$3"
+    local delay_val="${4:-6ms}"
     
     cat > "$LAST_CONFIG_FILE" << EOF
 RU_FILE=$ru_file
 NTN_FILE=$ntn_file
 CELLS_FILE=$cells_file
+DELAY_VAL=$delay_val
 EOF
     echo -e "${GREEN}Configuration saved for next time.${NC}"
 }
@@ -70,6 +72,7 @@ show_last_config_menu() {
     echo -e "  ${CYAN}RU:${NC}    $(basename "$RU_FILE")"
     echo -e "  ${CYAN}NTN:${NC}   $(basename "$NTN_FILE")"
     echo -e "  ${CYAN}Cells:${NC} $(basename "$CELLS_FILE")"
+    echo -e "  ${CYAN}Delay:${NC} ${DELAY_VAL:-6ms}"
     echo ""
     echo -e "${YELLOW}Options:${NC}"
     echo -e "  ${GREEN}1)${NC} Use last configuration"
@@ -385,12 +388,12 @@ if [ "$USE_LAST_CONFIG" = false ]; then
     echo ""
 
     # Select NTN file
-    NTN_FILE=$(select_file "${CONF_DIR}/NTN" "NTN configuration")
+    NTN_FILE=$(select_file "${CONF_DIR}/gNB/NTN" "NTN configuration")
     if [ $? -ne 0 ]; then exit 1; fi
     echo ""
 
     # Select Cells file
-    CELLS_FILE=$(select_file "${CONF_DIR}/Cells" "Cells configuration")
+    CELLS_FILE=$(select_file "${CONF_DIR}/gNB/Cells" "Cells configuration")
     if [ $? -ne 0 ]; then exit 1; fi
 
     # Confirm selection
@@ -398,9 +401,6 @@ if [ "$USE_LAST_CONFIG" = false ]; then
         echo -e "${YELLOW}Configuration cancelled.${NC}"
         exit 0
     fi
-    
-    # Save this configuration for next time
-    save_last_config "$RU_FILE" "$NTN_FILE" "$CELLS_FILE"
 fi
 
 # Ask for output filename
@@ -449,4 +449,34 @@ echo -e "${GREEN}✓ Configuration complete!${NC}"
 echo -e "${GREEN}================================================${NC}"
 echo ""
 echo -e "${CYAN}Output file:${NC} $OUTPUT_FILE"
+echo ""
+
+# Ask for Network delay (netem tc)
+echo -e "${YELLOW}Network Delay Configuration (tc netem):${NC}"
+DEFAULT_DELAY=${DELAY_VAL:-"6ms"}
+read -p "Enter delay for gNB -> CN path [$DEFAULT_DELAY]: " delay_input
+delay_input="${delay_input:-$DEFAULT_DELAY}"
+
+# Write to env file for docker-compose
+echo "DELAY_GNB_CN=${delay_input}" > .env.gnb
+echo -e "${GREEN}Written:${NC} .env.gnb  →  ${CYAN}DELAY_GNB_CN=${delay_input}${NC}"
+echo ""
+
+# Save this configuration for next time (including delay)
+save_last_config "$RU_FILE" "$NTN_FILE" "$CELLS_FILE" "$delay_input"
+echo ""
+
+read -p "Do you want to start the gNB container now? (y/n): " start_container
+if [[ "$start_container" =~ ^[Yy]$ ]]; then
+    if [ "$OUTPUT_FILE" != "$TEMPLATE_FILE" ]; then
+        echo -e "${YELLOW}⚠ Warning: docker-compose.yaml mounts conFs/gnb_template.conf by default.${NC}"
+        echo -e "${YELLOW}Ensure docker-compose.yaml is updated if you want to use the output file instead of the original template.${NC}"
+    fi
+    echo -e "${CYAN}Starting oai-gnb container in the foreground...${NC}"
+    if docker compose up oai-gnb 2>/dev/null || docker-compose up oai-gnb; then
+        echo -e "${GREEN}✓ Container exited.${NC}"
+    else
+        echo -e "${RED}✗ Failed to start container or container exited with error.${NC}"
+    fi
+fi
 echo ""

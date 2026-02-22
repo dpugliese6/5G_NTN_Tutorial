@@ -6,8 +6,8 @@ services:
     env_file:
       - .env
     volumes:
-      - mongodbdata:/data/db
-      - mongodbdata:/data/configdb
+      #- mongodbdata:/data/db
+      #- mongodbdata:/data/configdb
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:

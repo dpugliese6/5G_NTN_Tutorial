@@ -1,7 +1,8 @@
 {
- "att_tx"    : 0,
- "att_rx"    : 0,
- "max_rxgain": 131,
- "sdr_addrs" : "serial = 31C5255"
+    "att_tx": 0,
+    "att_rx": 19,
+    "max_rxgain": 120,
+    "sdr_addrs": "serial = 31C5255",
+    "time_src": "external",
+    "clock_src": "external"
 }
-

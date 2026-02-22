@@ -731,3 +731,18 @@ else
     echo -e "${CYAN}USE_ADDITIONAL_OPTIONS:${NC} (empty — no additional options selected)"
 fi
 echo ""
+
+read -p "Do you want to start the UE container now? (y/n): " start_container
+if [[ "$start_container" =~ ^[Yy]$ ]]; then
+    if [ "$OUTPUT_FILE" != "$TEMPLATE_FILE" ]; then
+        echo -e "${YELLOW}⚠ Warning: docker-compose.yaml mounts confs/ue_template.conf by default.${NC}"
+        echo -e "${YELLOW}Ensure docker-compose.yaml is updated if you want to use the output file instead of the original template.${NC}"
+    fi
+    echo -e "${CYAN}Starting oai-nr-ue container in the foreground...${NC}"
+    if docker compose up oai-nr-ue 2>/dev/null || docker-compose up oai-nr-ue; then
+        echo -e "${GREEN}✓ Container exited.${NC}"
+    else
+        echo -e "${RED}✗ Failed to start container or container exited with error.${NC}"
+    fi
+fi
+echo ""

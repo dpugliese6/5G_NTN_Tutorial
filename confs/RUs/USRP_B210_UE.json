@@ -1,9 +1,10 @@
 {
- "att_tx"    : 0,
- "att_rx"    : 0,
- "max_rxgain": 131,
- "sdr_addrs" : "serial = 34AF4F6",
- "tx_subdev" : "A:A",
- "rx_subdev" : "A:A"
+    "att_tx": 0,
+    "att_rx": 0,
+    "max_rxgain": 101,
+    "sdr_addrs": "serial = 34AF4F6",
+    "tx_subdev": "A:A",
+    "rx_subdev": "A:A",
+    "time_src": "external",
+    "clock_src": "external"
 }
-
