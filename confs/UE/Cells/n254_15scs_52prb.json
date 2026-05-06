@@ -1,6 +1,6 @@
 {
  "band": 254,
- "rf_freq": 2488500000,
+ "rf_freq": 2488500000L,
  "rf_offset": -873500000,
  "numerology": 0,
  "N_RB_DL": 52,

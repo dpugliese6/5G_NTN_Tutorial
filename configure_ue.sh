@@ -432,8 +432,10 @@ replace_value_nested() {
 # Function to read JSON with comment support
 read_json_clean() {
     local file="$1"
-    # Strip // comments and /* */ comments
-    grep -v '^\s*//' "$file" | sed 's|//.*||' | sed 's|/\*.*\*/||'
+    # Strip // comments and /* */ comments, then convert C-style long literals
+    # (e.g. 2488500000L) to JSON strings ("2488500000L") so jq can parse them
+    grep -v '^\s*//' "$file" | sed 's|//.*||' | sed 's|/\*.*\*/||' \
+        | sed 's/:\s*\(-\?[0-9][0-9]*[Ll]\)\b/: "\1"/g'
 }
 
 # Function to extract all key-value pairs from a JSON file
@@ -503,14 +505,26 @@ extract_json_params() {
         
         # Handle string values (need quotes in config)
         if echo "$clean_json" | jq -e ".[\"$key\"] | type == \"string\"" >/dev/null 2>&1; then
-            # Add quotes for string values
-            if replace_value_nested "$key" "\"$value\""; then
-                applied=$((applied + 1))
-                applied_params+=("$key")
-                applied_values+=("\"$value\"")
+            # C-style long literals (e.g. "2488500000L") must go without quotes
+            if [[ "$value" =~ ^-?[0-9]+[Ll]$ ]]; then
+                if replace_value_nested "$key" "$value"; then
+                    applied=$((applied + 1))
+                    applied_params+=("$key")
+                    applied_values+=("$value")
+                else
+                    skipped_params+=("$key")
+                    skipped_values+=("$value")
+                fi
             else
-                skipped_params+=("$key")
-                skipped_values+=("\"$value\"")
+                # Regular string values — add quotes
+                if replace_value_nested "$key" "\"$value\""; then
+                    applied=$((applied + 1))
+                    applied_params+=("$key")
+                    applied_values+=("\"$value\"")
+                else
+                    skipped_params+=("$key")
+                    skipped_values+=("\"$value\"")
+                fi
             fi
         else
             # Numeric or boolean values
