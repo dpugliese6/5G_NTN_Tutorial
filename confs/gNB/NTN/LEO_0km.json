@@ -3,7 +3,7 @@
 {
   //harq
   "disable_harq": 0,
-  "num_dlharq":  32,  
+  "num_dlharq":  32,
   "num_ulharq":  32,
   //sib19
   "ntn-UlSyncValidityDuration-r17": 0, // Check if this value is supported
@@ -18,5 +18,5 @@
   "velocityVZ-r17": -125611,                  //
   //mac
   "dl_max_mcs": 16, //TODO: align to SNR computed on MATLAB
-  "ul_max_mcs": 4
+  "ul_max_mcs": 3
 }
