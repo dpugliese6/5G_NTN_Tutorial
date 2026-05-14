@@ -45,6 +45,56 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
+  gnb-cst:
+        build:
+            context: .
+            dockerfile: Dockerfile_gnb
+        image: gnb-cst:latest
+        container_name: gnb-cst
+        privileged: true
+        cap_add:
+            - SYS_NICE
+            - IPC_LOCK
+        mem_limit: 4g
+        cap_drop:
+            - ALL
+        env_file:
+            - .env.gnb #Configure here flags for delays
+        environment:
+            USE_ADDITIONAL_OPTIONS: #Put here additional parameters for nr-softmodem executable
+            UHD_IMAGES_DIR : "/usr/share/uhd/images"
+            ASAN_OPTIONS: detect_leaks=0
+            # DELAY_GNB_CN is read from .env.gnb
+        networks:
+         default:
+           ipv4_address: 172.22.0.25
+         macvlan0:
+           ipv4_address: 192.168.30.1
+         macvlan1:
+           ipv4_address: 192.168.31.1
+         macvlan2:
+           ipv4_address: 192.168.40.1
+        volumes:
+            - ./confs/gnb_template.conf:/opt/oai-gnb/etc/gnb.conf
+            - /dev/bus/usb/:/dev/bus/usb/
+            - /usr/local/share/uhd/images:/usr/share/uhd/images
+        command: >
+          /bin/bash -c "
+          for i in 1 2 3 4 5; do
+            IFACE=$$(ip -o addr show | awk '/172\.22\.0\./ {print $$2; exit}');
+            [ -n \"$$IFACE\" ] && break;
+            sleep 1;
+          done &&
+          echo Found: $$IFACE &&
+          tc qdisc add dev $$IFACE root netem delay $$DELAY_GNB_CN || true &&
+          exec /tini -s -v /opt/oai-gnb/bin/entrypoint.sh /opt/oai-gnb/bin/nr-softmodem"
+        healthcheck:
+            test: /bin/bash -c "pgrep nr-softmodem"
+            start_period: 10s
+            start_interval: 500ms
+            interval: 10s
+            timeout: 5s
+            retries: 5          
             
   oai-nr-ue:
         image: ${REGISTRY-oaisoftwarealliance/}${NRUE_IMG:-oai-nr-ue}:${TAG:-2026.w18}
