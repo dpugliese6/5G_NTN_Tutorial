@@ -454,6 +454,10 @@ echo ""
 # Ask for Network delay (netem tc)
 echo -e "${YELLOW}Network Delay Configuration (tc netem):${NC}"
 DEFAULT_DELAY=${DELAY_VAL:-"6ms"}
+CN_DELAY=$(grep -E '^DELAY_CN_GNB=' .env_cn 2>/dev/null | cut -d'=' -f2)
+if [ -n "$CN_DELAY" ]; then
+    echo -e "  ${CYAN}CN -> gNB delay (from .env_cn):${NC} ${CN_DELAY}"
+fi
 read -p "Enter delay for gNB -> CN path [$DEFAULT_DELAY]: " delay_input
 delay_input="${delay_input:-$DEFAULT_DELAY}"
 
@@ -473,7 +477,7 @@ if [[ "$start_container" =~ ^[Yy]$ ]]; then
         echo -e "${YELLOW}Ensure docker-compose.yaml is updated if you want to use the output file instead of the original template.${NC}"
     fi
     echo -e "${CYAN}Starting oai-gnb container in the foreground...${NC}"
-    if docker compose up oai-gnb 2>/dev/null || docker-compose up oai-gnb; then
+    if docker compose -f docker-compose_ran.yaml up oai-gnb 2>/dev/null || docker compose -f docker-compose_ran.yaml up oai-gnb; then
         echo -e "${GREEN}✓ Container exited.${NC}"
     else
         echo -e "${RED}✗ Failed to start container or container exited with error.${NC}"

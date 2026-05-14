@@ -16,5 +16,5 @@
   "velocityVZ-r17": 0,                      //
   //mac
   "dl_max_mcs": 0, //TODO: align to SNR computed on MATLAB
-  "ul_max_mcs": 0
+  "ul_max_mcs": 0 
 }

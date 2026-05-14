@@ -4,7 +4,7 @@ services:
     container_name: mongo
     command: --bind_ip 0.0.0.0
     env_file:
-      - .env
+      - .env_cn
     volumes:
       #- mongodbdata:/data/db
       #- mongodbdata:/data/configdb
@@ -22,11 +22,11 @@ services:
     depends_on:
       - mongo
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=webui
     volumes:
-      - ./webui:/mnt/webui
+      - ./Open5GS_CN/webui:/mnt/webui
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -40,12 +40,12 @@ services:
     image: ghcr.io/herlesupreeth/docker_open5gs:master
     container_name: nrf
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=nrf
     volumes:
-      - ./nrf:/mnt/nrf
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/nrf:/mnt/nrf
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -59,12 +59,12 @@ services:
       - nrf
     container_name: scp
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=scp
     volumes:
-      - ./scp:/mnt/scp
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/scp:/mnt/scp
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -79,12 +79,12 @@ services:
       - scp
     container_name: ausf
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=ausf
     volumes:
-      - ./ausf:/mnt/ausf
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/ausf:/mnt/ausf
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -100,12 +100,12 @@ services:
       - mongo
     container_name: udr
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=udr
     volumes:
-      - ./udr:/mnt/udr
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/udr:/mnt/udr
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -120,12 +120,12 @@ services:
       - scp
     container_name: udm
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=udm
     volumes:
-      - ./udm:/mnt/udm
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/udm:/mnt/udm
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -141,13 +141,13 @@ services:
       - amf
     container_name: smf
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=smf
       - DEPLOY_MODE=5G
     volumes:
-      - ./smf:/mnt/smf
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/smf:/mnt/smf
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -170,12 +170,12 @@ services:
       - smf
     container_name: upf
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=upf
     volumes:
-      - ./upf:/mnt/upf
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/upf:/mnt/upf
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -190,6 +190,19 @@ services:
     sysctls:
       - net.ipv4.ip_forward=1
       #- net.ipv6.conf.all.disable_ipv6=0
+    entrypoint: ""
+    command: >
+      bash -c "for i in 1 2 3 4 5; do
+                 IFACE=$$(ip -o addr show | awk '/172\.22\.0\./ {print $$2; exit}')
+                 [ -n \"$$IFACE\" ] && break
+                 sleep 1
+               done &&
+               echo Found: $$IFACE &&
+               tc qdisc add dev $$IFACE root handle 1: prio bands 3 priomap 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 &&
+               tc qdisc add dev $$IFACE parent 1:1 handle 10: netem delay ${DELAY_CN_GNB} &&
+               tc filter add dev $$IFACE protocol ip parent 1:0 prio 1 u32 match ip dst 172.22.0.25/32 flowid 1:1 &&
+               echo 'Delay applied' &&
+               exec /mnt/upf/upf_init.sh"
     networks:
       default:
         ipv4_address: ${UPF_IP}
@@ -203,20 +216,35 @@ services:
       - udr
       - pcf
       - bsf
+    cap_add:
+      - NET_ADMIN
     container_name: amf
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=amf
     volumes:
-      - ./amf:/mnt/amf
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/amf:/mnt/amf
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
       - "38412/sctp"
       - "7777/tcp"
       - "9091/tcp"
+    entrypoint: ""
+    command: >
+      bash -c "for i in 1 2 3 4 5; do
+                 IFACE=$$(ip -o addr show | awk '/172\.22\.0\./ {print $$2; exit}')
+                 [ -n \"$$IFACE\" ] && break
+                 sleep 1
+               done &&
+               echo Found: $$IFACE &&
+               tc qdisc add dev $$IFACE root handle 1: prio bands 3 priomap 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 &&
+               tc qdisc add dev $$IFACE parent 1:1 handle 10: netem delay ${DELAY_CN_GNB} &&
+               tc filter add dev $$IFACE protocol ip parent 1:0 prio 1 u32 match ip dst 172.22.0.25/32 flowid 1:1 &&
+               echo 'Delay applied' &&
+               exec /mnt/amf/amf_init.sh"
     # ports:
     #   - "38412:38412/sctp"
     networks:
@@ -230,12 +258,12 @@ services:
       - mongo
     container_name: pcf
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=pcf
     volumes:
-      - ./pcf:/mnt/pcf
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/pcf:/mnt/pcf
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -252,12 +280,12 @@ services:
       - mongo
     container_name: bsf
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=bsf
     volumes:
-      - ./bsf:/mnt/bsf
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/bsf:/mnt/bsf
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:
@@ -273,12 +301,12 @@ services:
       - mongo
     container_name: nssf
     env_file:
-      - .env
+      - .env_cn
     environment:
       - COMPONENT_NAME=nssf
     volumes:
-      - ./nssf:/mnt/nssf
-      - ./log:/open5gs/install/var/log/open5gs
+      - ./Open5GS_CN/nssf:/mnt/nssf
+      - ./Open5GS_CN/log:/open5gs/install/var/log/open5gs
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     expose:

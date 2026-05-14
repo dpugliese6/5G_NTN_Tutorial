@@ -753,7 +753,7 @@ if [[ "$start_container" =~ ^[Yy]$ ]]; then
         echo -e "${YELLOW}Ensure docker-compose.yaml is updated if you want to use the output file instead of the original template.${NC}"
     fi
     echo -e "${CYAN}Starting oai-nr-ue container in the foreground...${NC}"
-    if docker compose up oai-nr-ue 2>/dev/null || docker-compose up oai-nr-ue; then
+    if docker compose -f docker-compose_ran.yaml up oai-nr-ue 2>/dev/null || docker-compose -f docker-compose_ran.yaml up oai-nr-ue; then
         echo -e "${GREEN}✓ Container exited.${NC}"
     else
         echo -e "${RED}✗ Failed to start container or container exited with error.${NC}"
