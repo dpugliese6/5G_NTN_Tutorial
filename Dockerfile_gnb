@@ -59,6 +59,7 @@ RUN apt-get update && \
         libubsan1; fi' && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
+    
 
 WORKDIR /opt/oai/bin
 COPY ./oai-gnb/cmake_targets/ran_build/build/ \
@@ -67,26 +68,27 @@ COPY ./oai-gnb/cmake_targets/ran_build/build/ \
 COPY ./oai-gnb/docker/scripts/gnb_entrypoint.sh ./entrypoint.sh
 COPY ./oai-gnb/docker/scripts/check-prach-io.sh ./check-prach-io.sh
 
-COPY ./oai-gnb/cmake_targets/ran_build/build/librfsimulator.so \
-    ./oai-gnb/cmake_targets/ran_build/build/libcoding.so \
+COPY ./oai-gnb/cmake_targets/ran_build/build/libcoding.so \
     ./oai-gnb/cmake_targets/ran_build/build/libparams_libconfig.so \
     ./oai-gnb/cmake_targets/ran_build/build/libdfts.so \
     ./oai-gnb/cmake_targets/ran_build/build/libldpc*.so \
-    ./oai-gnb/cmake_targets/ran_build/build/libtelnetsrv.so \
-    ./oai-gnb/cmake_targets/ran_build/build/libtelnetsrv_ciUE.so \
-    ./oai-gnb/cmake_targets/ran_build/build/libtelnetsrv_5Gue.so \
     ./oai-gnb/cmake_targets/ran_build/build/libparams_yaml.so \
-    ./oai-gnb/cmake_targets/ran_build/build/libvrtsim.so \
+    ./oai-gnb/cmake_targets/ran_build/build/liboai_usrpdevif.so \
     /usr/local/lib/
 
-COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/kpm_sm/kpm_sm_v03.00/libkpm_sm.so /usr/local/lib/flexric/
-COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/gtp_sm/libgtp_sm.so /usr/local/lib/flexric/
-COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/mac_sm/libmac_sm.so /usr/local/lib/flexric/
-COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/pdcp_sm/libpdcp_sm.so /usr/local/lib/flexric/
-COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/rc_sm/librc_sm.so /usr/local/lib/flexric/
-COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/rlc_sm/librlc_sm.so /usr/local/lib/flexric/
-COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/slice_sm/libslice_sm.so /usr/local/lib/flexric/
-COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/tc_sm/libtc_sm.so /usr/local/lib/flexric/
+COPY ./uhd_find_devices /usr/local/bin/
+COPY ./libuhd.so.4.8.0 /usr/local/lib/
+COPY ./uhd_images_downloader.py /opt/oai/bin/
+
+
+# COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/kpm_sm/kpm_sm_v03.00/libkpm_sm.so /usr/local/lib/flexric/
+# COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/gtp_sm/libgtp_sm.so /usr/local/lib/flexric/
+# COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/mac_sm/libmac_sm.so /usr/local/lib/flexric/
+# COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/pdcp_sm/libpdcp_sm.so /usr/local/lib/flexric/
+# COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/rc_sm/librc_sm.so /usr/local/lib/flexric/
+# COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/rlc_sm/librlc_sm.so /usr/local/lib/flexric/
+# COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/slice_sm/libslice_sm.so /usr/local/lib/flexric/
+# COPY ./oai-gnb/openair2/E2AP/flexric/build/src/sm/tc_sm/libtc_sm.so /usr/local/lib/flexric/
 
 RUN /bin/bash -c "ln -s /usr/local/lib/liboai_usrpdevif.so /usr/local/lib/liboai_device.so" && \
     ldconfig 
@@ -100,5 +102,5 @@ ENV YQ_VERSION=v4.2.0
 RUN wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${TARGETARCH} -O /usr/local/bin/yq &&\
     chmod +x /usr/local/bin/yq
 
-ENTRYPOINT ["/tini", "-v", "--", "/opt/oai/bin/entrypoint.sh"]
-CMD ["/opt/oai/bin/nr-softmodem"]
+#ENTRYPOINT ["/tini", "-v", "--", "/opt/oai/bin/entrypoint.sh"]
+#CMD ["/opt/oai/bin/nr-softmodem"]

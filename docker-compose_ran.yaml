@@ -87,7 +87,7 @@ services:
           done &&
           echo Found: $$IFACE &&
           tc qdisc add dev $$IFACE root netem delay $$DELAY_GNB_CN || true &&
-          exec /tini -s -v /opt/oai-gnb/bin/entrypoint.sh /opt/oai-gnb/bin/nr-softmodem"
+          exec /tini -s -v /opt/oai/bin/entrypoint.sh /opt/oai/bin/nr-softmodem"
         healthcheck:
             test: /bin/bash -c "pgrep nr-softmodem"
             start_period: 10s
