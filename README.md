@@ -193,3 +193,16 @@ The files in `confs/gNB/NTN/` contain configurations that adapt standard 5G cell
 *   `positionX-r17`, `positionY-r17`, `positionZ-r17`: The orbital Ephemeris data defining the satellite's exact position state vector in the ECEF coordinate system. Values are provided in steps of $1.3$ meters (Actual position in meters = field value $\times \ 1.3$).
 *   `velocityVX-r17`, `velocityVY-r17`, `velocityVZ-r17`: The velocity state vector of the satellite in ECEF, used by the UE to perform Doppler pre-compensation. Values are provided in steps of $0.06$ m/s (Actual velocity in m/s = field value $\times \ 0.06$).
 *   `dl_max_mcs` / `ul_max_mcs`: Force the scheduler to cap the Modulation and Coding Scheme (MCS) to a maximum value.
+
+## TODO
+
+```bash
+git submodule update --init
+```
+
+```bash
+./build_oai --ninja \
+      --gNB --nrUE \
+      --build-lib "nrscope"  -w USRP  \
+      --cmake-opt -DCMAKE_C_FLAGS="-Werror" --cmake-opt -DCMAKE_CXX_FLAGS="-Werror"
+```

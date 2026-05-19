@@ -65,7 +65,7 @@ WORKDIR /opt/oai/bin
 COPY ./oai-gnb/cmake_targets/ran_build/build/ \
     ./
 
-COPY ./oai-gnb/docker/scripts/gnb_entrypoint.sh ./entrypoint.sh
+COPY ./oai-gnb/docker/scripts/nr_ue_entrypoint.sh ./entrypoint.sh
 COPY ./oai-gnb/docker/scripts/check-prach-io.sh ./check-prach-io.sh
 
 COPY ./oai-gnb/cmake_targets/ran_build/build/libcoding.so \
@@ -102,5 +102,5 @@ ENV YQ_VERSION=v4.2.0
 RUN wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${TARGETARCH} -O /usr/local/bin/yq &&\
     chmod +x /usr/local/bin/yq
 
-#ENTRYPOINT ["/tini", "-v", "--", "/opt/oai/bin/entrypoint.sh"]
-#CMD ["/opt/oai/bin/nr-softmodem"]
+CMD ["/opt/oai/bin/nr-uesoftmodem"]
+ENTRYPOINT ["/tini", "-v", "--", "/opt/oai/bin/entrypoint.sh"]
