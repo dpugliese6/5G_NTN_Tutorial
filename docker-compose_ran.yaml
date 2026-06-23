@@ -1,6 +1,6 @@
 services:
   oai-gnb:
-        image: ${REGISTRY-oaisoftwarealliance/}${GNB_IMG:-oai-gnb}:${TAG:-2026.w18}
+        image: ${REGISTRY-oaisoftwarealliance/}${GNB_IMG:-oai-gnb}:${TAG:-2026.w25}
         container_name: oai-gnb
         cap_add:
             - SYS_NICE
@@ -9,12 +9,12 @@ services:
             - ALL
         privileged: true
         env_file:
-            - .env.gnb #Configure here flags for delays
+            - .env_gnb #Configure here flags for delays
         environment:
             USE_ADDITIONAL_OPTIONS: #Put here additional parameters for nr-softmodem executable
             UHD_IMAGES_DIR : "/usr/share/uhd/images"
             ASAN_OPTIONS: detect_leaks=0
-            # DELAY_GNB_CN is read from .env.gnb
+            # DELAY_GNB_CN is read from .env_gnb
         networks:
          default:
            ipv4_address: 172.22.0.25
@@ -59,12 +59,12 @@ services:
         cap_drop:
             - ALL
         env_file:
-            - .env.gnb #Configure here flags for delays
+            - .env_gnb #Configure here flags for delays
         environment:
             USE_ADDITIONAL_OPTIONS: #Put here additional parameters for nr-softmodem executable
             UHD_IMAGES_DIR : "/usr/share/uhd/images"
             ASAN_OPTIONS: detect_leaks=0
-            # DELAY_GNB_CN is read from .env.gnb
+            # DELAY_GNB_CN is read from .env_gnb
         networks:
          default:
            ipv4_address: 172.22.0.25
@@ -94,10 +94,9 @@ services:
             start_interval: 500ms
             interval: 10s
             timeout: 5s
-            retries: 5          
-            
+            retries: 5                     
   oai-nr-ue:
-        image: ${REGISTRY-oaisoftwarealliance/}${NRUE_IMG:-oai-nr-ue}:${TAG:-2026.w18}
+        image: ${REGISTRY-oaisoftwarealliance/}${NRUE_IMG:-oai-nr-ue}:${TAG:-2026.w25}
         container_name: oai-nr-ue
         cap_drop:
             - ALL
@@ -107,7 +106,7 @@ services:
             - SYS_NICE
         privileged: true
         env_file:
-          - .env.ue #Configure here flags for nr-uesoftmodem command
+          - .env_ue #Configure here flags for nr-uesoftmodem command
         environment:
             UHD_IMAGES_DIR : "/usr/share/uhd/images"
             #Put here additional parameters for nr-uesoftmodem executable  
@@ -116,7 +115,7 @@ services:
         devices:
              - /dev/net/tun:/dev/net/tun
         volumes:
-            - ./confs/ue_template.conf:/opt/oai-gnb/etc/nr-ue.conf
+            - ./confs/ue_template.conf:/opt/oai-nr-ue/etc/nr-ue.conf
             - /dev/bus/usb/:/dev/bus/usb/
             - /usr/local/share/uhd/images:/usr/share/uhd/images
         healthcheck:
@@ -140,7 +139,7 @@ services:
         cap_drop:
             - ALL
         env_file:
-          - .env.ue #Configure here flags for nr-uesoftmodem command
+          - .env_ue #Configure here flags for nr-uesoftmodem command
         environment:
             UHD_IMAGES_DIR : "/usr/share/uhd/images"
             #Put here additional parameters for nr-uesoftmodem executable  
