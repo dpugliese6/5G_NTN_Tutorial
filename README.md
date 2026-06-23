@@ -7,7 +7,7 @@ This is a collection of useful files and scripts for setting up a Non-Terrestria
 This repository provides an automated and modular environment to deploy a 5G NTN architecture. It relies on the Open5GS for implementing a 5G Standalone (SA) Core Network and OpenAirInterface 5G for the gNB (base station) and a UE (User Equipment). 
 ### Key Components
 
-*   **5G Core Network**: Found in the `Open5GS_CN` directory, it contains a docker-compose to run a complete 5G Core Network.
+*   **5G Core Network**: Found in the `cn` directory, it contains a docker-compose to run a complete 5G Core Network.
 *   **OAI gNB & UE**: Containerized using Docker (`docker-compose.yaml`). In case of a Regenerative satellite, it is possible to emulate the delay between the gNodeB and the Core Network (configured dynamically during startup).
 *   **Dynamic Configuration Scripts**: The scripts `configure_gnb.sh` and `configure_ue.sh` are interactive. They parse modular JSON configuration files from the `confs/` directory to generate the final configuration files for the gNB and UE respectively, preventing syntax errors in the complex OAI parameters.
     *   **Configuration Layout (`confs/`)**: Contains modular pieces of configuration (`RUs`, `gNB/NTN`, etc.).
@@ -16,7 +16,7 @@ This repository provides an automated and modular environment to deploy a 5G NTN
 
 The repository is organized into specific directories to isolate different components of the 5G NTN stack:
 
-*   **`Open5GS_CN/`**: This directory contains the Docker configuration and necessary parameters to deploy the Open5GS Core Network, acting as the backbone for the Standalone 5G architecture.
+*   **`cn/`**: This directory contains the Docker configuration and necessary parameters to deploy the Open5GS Core Network, acting as the backbone for the Standalone 5G architecture.
 *   **`confs/`**: This folder acts as a configuration hub. It is further divided into:
     *   **`RUs/`**: Contains the configuration for different Radio Units (e.g., SDR models).
     *   **`gNB/`**: Houses gNodeB-specific configurations, including Non-Terrestrial Network (NTN) parameters like orbit delays, and base station cell parameters.
@@ -114,9 +114,9 @@ Working directly with OpenAirInterface's monolithic `.conf` files can be prone t
 
 ### Setup
 
-1.  **Core Network**: Deploy the Open5GS core network from the `Open5GS_CN` directory.
+1.  **Core Network**: Deploy the Open5GS core network from the `cn` directory.
     ```bash
-    cd Open5GS_CN
+    cd cn
     docker-compose up -d
     cd ..
     ```
