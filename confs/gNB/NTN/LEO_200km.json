@@ -15,6 +15,6 @@
   "velocityVY-r17": 0,                        //resolution of 0.06 m/s
   "velocityVZ-r17": -125611,                  //
   //mac
-  "dl_max_mcs": 16, //TODO: align to SNR computed on MATLAB
-  "ul_max_mcs": 4
+  "dl_max_mcs":16, //TODO: align to SNR computed on MATLAB
+  "ul_max_mcs":3
 }

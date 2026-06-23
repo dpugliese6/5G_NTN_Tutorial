@@ -1,0 +1,3 @@
+[submodule "oai-custom"]
+	path = oai-custom
+	url = https://github.com/duranta-project/openairinterface5g.git

@@ -1,28 +1,18 @@
 # 5G_NTN_Tutorial
 
-This is a collection of useful files and scripts for setting up a Non-Terrestrial Network (NTN) using OpenAirInterface (OAI), Software-Defined Radios (SDRs). The repository contains all the necessary utilities to set up a complete end-to-end 5G NTN with Geostationary Orbit (GEO) satellite and Low Earth Orbit (LEO) satellite.
+This is a collection of useful files and scripts for setting up a Non-Terrestrial Network (NTN) using OpenAirInterface (OAI) and Software-Defined Radios (SDRs). The repository contains all the necessary utilities to set up a complete end-to-end 5G NTN with Geostationary Orbit (GEO) satellite and Low Earth Orbit (LEO) satellite.
 
 ## Overview
 
-This repository provides an automated and modular environment to deploy a 5G NTN architecture. It relies on the Open5GS for implementing a 5G Standalone (SA) Core Network and OpenAirInterface 5G for the gNB (base station) and a UE (User Equipment). 
+This repository provides an automated and modular environment to deploy a 5G NTN architecture. It relies on Open5GS for implementing a 5G Standalone (SA) Core Network and OpenAirInterface5G for the gNB and a UE. 
 ### Key Components
 
-*   **5G Core Network**: Found in the `Open5GS_CN` directory, it contains a docker-compose to run a complete 5G Core Network.
-*   **OAI gNB & UE**: Containerized using Docker (`docker-compose.yaml`). In case of a Regenerative satellite, it is possible to emulate the delay between the gNodeB and the Core Network (configured dynamically during startup).
+*   **5G Core Network**: The Open5GS Core Network is launched via `docker-compose_cn.yaml`, while the `cn/` directory holds the per-NF configuration files (AMF, SMF, UPF, etc.).
+*   **Custom OAI (`oai-custom`)**: A fork of OpenAirInterface5G included as a **git submodule** ([duranta-project/openairinterface5g](https://github.com/duranta-project/openairinterface5g.git)). It must be compiled on the host **before** building the RAN images (see [Build the Custom OAI](#1-build-the-custom-oai)), since the Docker images copy the pre-built binaries.
+*   **OAI gNB & UE**: Containerized using Docker (`docker-compose_ran.yaml`). The compose file defines both the official upstream images (`oai-gnb`, `oai-nr-ue`) and the custom ones built locally from `oai-custom` (`gnb-cst` via `Dockerfile_gnb`, `ue-cst` via `Dockerfile_ue`). In case of a Regenerative satellite, it is possible to emulate the delay between the gNodeB and the Core Network (configured dynamically during startup).
 *   **Dynamic Configuration Scripts**: The scripts `configure_gnb.sh` and `configure_ue.sh` are interactive. They parse modular JSON configuration files from the `confs/` directory to generate the final configuration files for the gNB and UE respectively, preventing syntax errors in the complex OAI parameters.
     *   **Configuration Layout (`confs/`)**: Contains modular pieces of configuration (`RUs`, `gNB/NTN`, etc.).
-
-## Directory Structure
-
-The repository is organized into specific directories to isolate different components of the 5G NTN stack:
-
-*   **`Open5GS_CN/`**: This directory contains the Docker configuration and necessary parameters to deploy the Open5GS Core Network, acting as the backbone for the Standalone 5G architecture.
-*   **`confs/`**: This folder acts as a configuration hub. It is further divided into:
-    *   **`RUs/`**: Contains the configuration for different Radio Units (e.g., SDR models).
-    *   **`gNB/`**: Houses gNodeB-specific configurations, including Non-Terrestrial Network (NTN) parameters like orbit delays, and base station cell parameters.
-    *   **`UE/`**: Holds configurations specific to the User Equipment, along with support for additional execution flags.
-*   **`configure_gnb.sh` & `configure_ue.sh`**: At the root of the project, these interactive bash scripts are used to dynamically read the JSON templates in `confs/` and generate the final configuration files required by the OpenAirInterface executables.
-*   **`docker-compose.yaml`**: The main orchestration file that spins up both the gNB and UE containers based on the generated configurations, applying the simulated network delays over the virtual interfaces.
+*   **Measurement Scripts (`propsim_control/`)**: A collection of helper scripts to drive the propagation-channel emulator and run test campaigns (attach tests, RTT, downlink/uplink throughput).
 
 ## Pre-Configuration (Network Interfaces)
 
@@ -31,24 +21,26 @@ Before deploying the containers, **you must configure the physical network inter
 > [!NOTE]
 > This configuration is **only required if you are using Network-attached SDRs** (like the USRP X310 or X410). If you are using a USB-connected SDR (such as the USRP B210), you can safely skip this step as USB devices are passed directly through Docker volumes.
 
-1.  **Configure Macvlan Parents (Global)**: Open `docker-compose.yaml` and locate the `networks:` section at the bottom of the file. Change the `parent` interface names to match your host machine's actual network interfaces (e.g., `eth0`, `enp3s0`). You can list them using `ip a`.
+1.  **Configure Macvlan Parents (Global)**: Open `docker-compose_ran.yaml` and locate the `networks:` section at the bottom of the file. Change the `parent` interface names of `macvlan0`/`macvlan1`/`macvlan2` to match your host machine's actual network interfaces (e.g., `eth0`, `enp3s0`). You can list them using `ip a`.
     ```yaml
       macvlan0: 
         driver_opts:
           parent: enp1s0f0np0  <-- CHANGE THIS
     ```
 
-2.  **Assign Networks to gNB Container**: Inside `docker-compose.yaml`, locate the `oai-gnb:` service block and find its `networks:` section. Here, you map the global macvlans to the container and assign static IPs that belong to the subnet of your SDRs (e.g., if the static IP of the SDR is 192.168.30.2/24, then the static IP of the adapter should be 192.168.30.x/24):
+2.  **Assign Networks to gNB Container**: Inside `docker-compose_ran.yaml`, locate the gNB service block (`oai-gnb:` for the official image, or `gnb-cst:` for the custom build) and find its `networks:` section. Here, you map the global macvlans to the container and assign static IPs that belong to the subnet of your SDRs (e.g., if the static IP of the SDR is 192.168.30.2/24, then the static IP of the adapter should be 192.168.30.x/24):
     ```yaml
       oai-gnb:
         ...
         networks:
           default:
-            ipv4_address: 172.22.0.25      # Internal Core Network IP
+            ipv4_address: 172.22.0.25      # Inside CN IP
           macvlan0:
-            ipv4_address: 192.168.30.1     # IP assigned from the physical interface
+            ipv4_address: 192.168.30.1     # IP of to the net if
           macvlan1:
-            ipv4_address: 192.168.31.2
+            ipv4_address: 192.168.31.1
+          macvlan2:
+            ipv4_address: 192.168.40.1
     ```
 
 3.  **Verify Service Command Subnet**: Under the same `oai-gnb` service definition, there is a startup `command:` that looks for the virtual interface assigned by Docker (*usually the `default` network*) to apply the artificial delay:
@@ -59,7 +51,7 @@ Before deploying the containers, **you must configure the physical network inter
 
 ## Configuration Management
 
-Working directly with OpenAirInterface's monolithic `.conf` files can be prone to syntax errors and complex to maintain. To solve this, this repository uses a modular, template-based approach to configuration:
+Working directly with OpenAirInterface's monolithic `.conf` files can be prone to syntax errors and complex to maintain. To solve this, the repository uses a modular, template-based approach to configuration:
 
 1.  **OAI Templates**: Inside the `confs/` folder, there are two primary files (`gnb_template.conf` and `ue_template.conf`). These are standard OAI configuration files that act as the base blueprints. They contain placeholders and default values for all parameters.
 2.  **JSON Modules**: Instead of modifying the monolithic blueprints directly, configurations are logically grouped into smaller, manageable `.json` files. These modules fall into three main categories:
@@ -102,7 +94,7 @@ Working directly with OpenAirInterface's monolithic `.conf` files can be prone t
          "--autonomous-ta" : true
         }
         ```
-3.  **The Mapping Process**: When you execute `configure_gnb.sh` or `configure_ue.sh`, the scripts prompt you to choose these JSON profiles. They use `jq` to parse the keys and values from the selected JSON files and use regular expressions to dynamically search for and overwrite the corresponding variables inside the target `gnb_template.conf` or `ue_template.conf`. 
+3.  **The Mapping Process**: When you execute `configure_gnb.sh` or `configure_ue.sh`, the scripts prompt you to choose these JSON profiles.  
 
 ## Getting Started
 
@@ -114,29 +106,53 @@ Working directly with OpenAirInterface's monolithic `.conf` files can be prone t
 
 ### Setup
 
-1.  **Core Network**: Deploy the Open5GS core network from the `Open5GS_CN` directory.
+#### 1. Build the Custom OAI
+
+The custom OAI fork is included as a git submodule (`oai-custom`) and **must be compiled on the host before building the RAN images**, because `Dockerfile_gnb` / `Dockerfile_ue` copy the binaries produced under `oai-custom/cmake_targets/ran_build/build/`.
+
+*   Initialize (and update) the submodule:
     ```bash
-    cd Open5GS_CN
-    docker-compose up -d
-    cd ..
+    git submodule update --init
+    ```
+*   Compile the gNB, UE and the USRP support from the submodule:
+    ```bash
+    cd oai-custom/cmake_targets
+    ./build_oai --ninja \
+          --gNB --nrUE \
+          --build-lib "nrscope" -w USRP \
+          --cmake-opt -DCMAKE_C_FLAGS="-Werror" --cmake-opt -DCMAKE_CXX_FLAGS="-Werror"
+    cd ../..
     ```
 
-2.  **Configuration**: Generate the configuration files for your specific scenario or use some of the pre-configured examples.
-    *   Construct the gNB configuration. You will be prompted to also set the network delay at this step:
-        ```bash
-        ./configure_gnb.sh
-        ```
-    *   Construct the UE configuration:
-        ```bash
-        ./configure_ue.sh
-        ```
-3.  **Launch OAI**: Spin up the OAI gNB and UE containers based on your generated configurations. You can either answer "yes" at the end of the configuration scripts, or manually run:
+#### 2. Core Network
+
+Deploy the Open5GS core network:
+```bash
+docker compose -f docker-compose_cn.yaml up -d
+```
+
+#### 3. Configuration
+
+Generate the configuration files for your specific scenario or use some of the pre-configured examples.
+*   Construct the gNB configuration. You will be prompted to also set the network delay at this step:
     ```bash
-    docker compose up oai-gnb
+    ./configure_gnb.sh
     ```
+*   Construct the UE configuration:
     ```bash
-    docker compose up oai-nr-ue
+    ./configure_ue.sh
     ```
+
+#### 4. Launch OAI
+
+Spin up the gNB and UE containers based on your generated configurations. You can either answer "yes" at the end of the configuration scripts, or manually run them. Use the custom-built services (`gnb-cst` / `ue-cst`, built from `oai-custom`):
+```bash
+docker compose -f docker-compose_ran.yaml up gnb-cst
+```
+```bash
+docker compose -f docker-compose_ran.yaml up ue-cst
+```
+Alternatively, the official upstream images are available as the `oai-gnb` and `oai-nr-ue` services in the same compose file.
 
 ## Configuration Parameters Reference
 
@@ -149,9 +165,9 @@ The files in `confs/RUs/` define the physical connection and RF front-end settin
 *   `sdr_addrs`: The address used by the UHD driver to find the SDR, you can find this value by running the `uhd_find_devices` command. 
     *   For USB-connected SDRs (like the B210), this is usually the serial number: `"serial = 31C5255"`.
     *   For Network-attached SDRs (like X310 or X410), this is the static IP address: `"addr = 192.168.30.2"`.
-*   `att_tx` : This value is used in OAI to set the transmittion gain of the SDR. The value inserted is subtracted from the maximum gain of the SDR. 
-*   `att_rx`: Please refer to the rxgain section of this guide.
-*   `max_rxgain`: Please refer to the rxgain section of this guide.
+*   `att_tx` : This value is used in OAI to set the transmission gain of the SDR. The value inserted is subtracted from the maximum gain of the SDR. 
+*   `att_rx`: This value is used in OAI to set the reception gain of the SDR. The value inserted is subtracted from the maximum gain of the SDR. 
+*   `max_rxgain`: Set the mximum rx gain of the SDR.
 *   `time_src` / `clock_src`: Usually set to `"external"` if relying on an external GPSDO/10MHz reference clock to maintain tight synchronization.
 *   `tx_subdev` / `rx_subdev`: Selects which specific RF daughterboard and antenna port to use.
 
